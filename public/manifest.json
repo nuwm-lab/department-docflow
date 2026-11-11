@@ -3,6 +3,7 @@
   "name": "Вхідна документація кафедри",
   "short_name": "Docflow",
   "version": "0.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw9mQ0y32/Ma9zxsLsomO86e2fNNMqTmccIz136b8dg96G2DcE3P/zss5bP48Y65HuZX3YfjtpTjRGpICoiRy0FqqBl6k35Tq2zYR34Ru3WIwCyO1PhAVZZU0PiFZQLbbM82ybYC6v6V6Hs2ePX4eM3ReKm9hVBAb6TwPR3VB/nmh5Pa3LC0gVryvQ718DvQW1wAw+CjjzJVCajXfvWqD6PrxjgLOPiYKPU8ghsCPcdzY9Rvhzl7YGN9uIl7W9GdXOAad1+JPCEru7Zen3xbt670VzCVbtUIe8t0burEaEweeg4Mz0HRTRj/v1BwsjHcTyRUkGtiefxRgGg6w/oCXLQIDAQAB",
   "description": "Зберігає вхідні документи з Gmail у спільну папку кафедри на Google Диску та веде реєстр без дублікатів.",
   "minimum_chrome_version": "120",
   "action": {
