@@ -25,16 +25,59 @@
 
       <button id="sign-in-btn" type="button" hidden>Увійти в Google</button>
 
-      <dl id="preview" class="preview" hidden>
-        <dt>Тема</dt>
-        <dd id="pv-subject"></dd>
-        <dt>Від кого</dt>
-        <dd id="pv-from"></dd>
-        <dt>Дата</dt>
-        <dd id="pv-date"></dd>
-      </dl>
+      <form id="form" hidden>
+        <label class="field" id="thread-row" hidden>
+          <span>Лист у ланцюжку</span>
+          <select id="f-thread"></select>
+        </label>
 
-      <button id="save-btn" type="button" disabled>Зберегти</button>
+        <div class="grid">
+          <label class="field">
+            <span>Тип документа</span>
+            <select id="f-type"></select>
+          </label>
+          <label class="field">
+            <span>№ документа</span>
+            <input id="f-number" type="text" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>Дата документа</span>
+            <input id="f-date" type="date" />
+          </label>
+          <label class="field">
+            <span>Від кого</span>
+            <input id="f-from" type="text" autocomplete="off" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Короткий зміст</span>
+          <textarea id="f-summary" rows="2"></textarea>
+        </label>
+        <label class="field">
+          <span>Примітка</span>
+          <input id="f-note" type="text" autocomplete="off" />
+        </label>
+
+        <div class="folder">
+          <span class="muted">Назва папки</span>
+          <code id="folder-name"></code>
+        </div>
+
+        <fieldset class="attachments">
+          <legend>Додатки</legend>
+          <ul id="att-list"></ul>
+          <p id="att-empty" class="muted" hidden>Вкладень немає</p>
+        </fieldset>
+
+        <details id="md-preview">
+          <summary>Лист.md — попередній перегляд</summary>
+          <pre id="md-text"></pre>
+        </details>
+
+        <button id="save-btn" type="submit" disabled>Зберегти</button>
+        <p class="muted small">Збереження на Диск з’явиться на наступному кроці.</p>
+      </form>
 
       <p class="footer">
         <a href="#" id="open-options">Налаштування</a>

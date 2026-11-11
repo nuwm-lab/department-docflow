@@ -3,13 +3,13 @@ import type {
   AccessReport,
   AuthStatus,
   BackgroundRequest,
-  MessagePreview,
+  PreparedDocument,
   Result,
   SaveLocation,
 } from '../shared/messages';
 import { checkAccess, getSaveLocation } from './workspace';
 import { getSettings } from '../shared/storage';
-import { getMessagePreview } from './api/gmail';
+import { prepareDocument } from './prepare';
 import { AuthError, getToken, resolveAccount, signOut } from './auth';
 
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -51,8 +51,8 @@ async function handle(req: BackgroundRequest): Promise<unknown> {
     case 'SIGN_OUT':
       await signOut(req.email);
       return { signedIn: false, email: req.email } satisfies AuthStatus;
-    case 'GET_MESSAGE_PREVIEW':
-      return (await getMessagePreview(req.email, req.messageId)) satisfies MessagePreview;
+    case 'PREPARE_DOCUMENT':
+      return (await prepareDocument(req.email, req.messageId)) satisfies PreparedDocument;
     case 'GET_SAVE_LOCATION':
       return (await getSaveLocation(req.email)) satisfies SaveLocation;
     case 'CHECK_ACCESS':

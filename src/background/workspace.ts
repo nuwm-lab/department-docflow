@@ -116,14 +116,21 @@ export async function ensureYearFolder(ws: Workspace): Promise<DriveFile> {
 }
 
 /** Шлях для показу в popup, без змін на Диску. */
-export async function getSaveLocation(email: string): Promise<SaveLocation> {
-  const ws = await loadWorkspace(email);
-  if (!ws.yearFolder && ws.yearFromConfig) await ensureYearFolder(ws); // кине зрозумілу помилку
+export function saveLocationOf(ws: Workspace): SaveLocation {
+  if (!ws.yearFolder && ws.yearFromConfig) {
+    throw new WorkspaceError(
+      `Папку «${ws.yearName}», вказану в ${CONFIG_FILE_NAME} (currentYearFolder), не знайдено у «${ws.root.name}».`,
+    );
+  }
   return {
     path: `${ws.root.name} / ${ws.yearName}`,
     rootLink: folderLink(ws.root.id),
     yearExists: ws.yearFolder !== null,
   };
+}
+
+export async function getSaveLocation(email: string): Promise<SaveLocation> {
+  return saveLocationOf(await loadWorkspace(email));
 }
 
 /** «Перевірити доступ» на сторінці налаштувань: покроковий звіт. */
@@ -156,11 +163,10 @@ export async function checkAccess(email: string): Promise<AccessReport> {
   let cfg: Awaited<ReturnType<typeof loadConfig>>;
   try {
     cfg = await loadConfig(email, root);
-    items.push({
-      label: 'Налаштування',
-      status: cfg.configSource === 'file' ? 'ok' : 'warn',
-      detail: cfg.configSource === 'file' ? `${CONFIG_FILE_NAME} прочитано` : 'За замовчуванням',
-    });
+    if (cfg.configSource === 'file') {
+      items.push({ label: 'Налаштування', status: 'ok', detail: `${CONFIG_FILE_NAME} прочитано` });
+    }
+    // Для налаштувань за замовчуванням єдине зауваження вже пояснює ситуацію.
     for (const w of cfg.configWarnings) items.push({ label: 'Налаштування', status: 'warn', detail: w });
   } catch (err) {
     return fail('Налаштування', err);

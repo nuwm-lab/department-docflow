@@ -1,4 +1,6 @@
 // Типи повідомлень між частинами розширення (popup ↔ content script ↔ service worker).
+import type { SourceDocument, ThreadMessage } from '../sources/types';
+import type { DocflowConfig } from '../storage/config';
 
 /** Лист, знайдений у відкритому ланцюжку Gmail. */
 export interface OpenedMessage {
@@ -20,11 +22,12 @@ export interface OpenedMessageInfo {
   selectedId: string | null;
 }
 
-/** Короткі відомості про лист з Gmail API (для перевірки зв’язку). */
-export interface MessagePreview {
-  subject: string;
-  from: string;
-  date: string;
+/** Усе для вікна збереження: лист у єдиній моделі, листи ланцюжка, налаштування, шлях. */
+export interface PreparedDocument {
+  doc: SourceDocument;
+  thread: ThreadMessage[];
+  config: DocflowConfig;
+  location: SaveLocation;
 }
 
 export interface AuthStatus {
@@ -65,7 +68,7 @@ export type BackgroundRequest =
   | { type: 'AUTH_STATUS'; email: string }
   | { type: 'SIGN_IN'; email: string }
   | { type: 'SIGN_OUT'; email: string }
-  | { type: 'GET_MESSAGE_PREVIEW'; email: string; messageId: string }
+  | { type: 'PREPARE_DOCUMENT'; email: string; messageId: string }
   | { type: 'GET_SAVE_LOCATION'; email: string }
   | { type: 'CHECK_ACCESS'; email: string };
 
