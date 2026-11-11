@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <title>Налаштування — Вхідна документація кафедри</title>
+    <link rel="stylesheet" href="../shared/ui.css" />
+    <link rel="stylesheet" href="./options.css" />
+  </head>
+  <body>
+    <main class="options">
+      <h1>Налаштування «Вхідна документація кафедри»</h1>
+
+      <section>
+        <label for="root-folder">Спільна папка «Вхідна документація» на Google Диску</label>
+        <input
+          id="root-folder"
+          type="text"
+          placeholder="https://drive.google.com/drive/folders/…"
+          autocomplete="off"
+        />
+        <p class="muted small">
+          Вставте посилання на папку кафедри. Налаштування збережеться у вашому профілі Chrome
+          і перенесеться на інші комп’ютери.
+        </p>
+        <div class="row">
+          <button id="save-btn" type="button">Зберегти</button>
+          <button id="check-btn" type="button" disabled title="З’явиться після підключення авторизації Google">
+            Перевірити доступ
+          </button>
+          <span id="status" role="status"></span>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

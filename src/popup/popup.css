@@ -1,0 +1,5 @@
+.popup { width: 360px; padding: 16px; }
+.path { margin: 0 0 12px; }
+#status { margin: 0 0 14px; }
+.footer { margin: 14px 0 0; font-size: 13px; }
+.footer a { color: var(--accent); }

@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Вхідна документація кафедри",
+  "short_name": "Docflow",
+  "version": "0.1.0",
+  "description": "Зберігає вхідні документи з Gmail у спільну папку кафедри на Google Диску та веде реєстр без дублікатів.",
+  "minimum_chrome_version": "120",
+  "action": {
+    "default_title": "Вхідна документація кафедри",
+    "default_popup": "popup/index.html"
+  },
+  "options_page": "options/index.html",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["identity", "storage"],
+  "host_permissions": [
+    "https://mail.google.com/*",
+    "https://www.googleapis.com/*",
+    "https://gmail.googleapis.com/*",
+    "https://sheets.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "REPLACE_WITH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/drive",
+      "https://www.googleapis.com/auth/spreadsheets"
+    ]
+  }
+}

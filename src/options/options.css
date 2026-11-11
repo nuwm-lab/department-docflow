@@ -1,0 +1,4 @@
+.options { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+section { margin-bottom: 24px; }
+.small { font-size: 13px; margin: 6px 0 12px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
