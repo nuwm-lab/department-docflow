@@ -20,15 +20,29 @@
         />
         <p class="muted small">
           Вставте посилання на папку кафедри. Налаштування збережеться у вашому профілі Chrome
-          і перенесеться на інші комп’ютери.
+          і перенесеться на інші комп’ютери. Папку навчального року, типи документів і правила
+          задає адміністратор у файлі <code>_config.json</code> у цій папці.
         </p>
         <div class="row">
           <button id="save-btn" type="button">Зберегти</button>
-          <button id="check-btn" type="button" disabled title="З’явиться після підключення авторизації Google">
-            Перевірити доступ
-          </button>
           <span id="status" role="status"></span>
         </div>
+      </section>
+
+      <section>
+        <h2>Перевірка доступу</h2>
+        <p class="small">
+          <span class="muted">Акаунт:</span>
+          <span id="account">—</span>
+        </p>
+        <p id="account-hint" class="hint small" hidden>
+          Спершу відкрийте будь-який лист у Gmail, натисніть на іконку розширення і увійдіть у Google.
+        </p>
+        <div class="row">
+          <button id="check-btn" type="button" disabled>Перевірити доступ</button>
+          <button id="sign-in-btn" type="button" hidden>Увійти в Google</button>
+        </div>
+        <ul id="report" class="report" hidden></ul>
       </section>
     </main>
     <script type="module" src="./main.ts"></script>

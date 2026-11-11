@@ -19,6 +19,19 @@ export async function saveSettings(patch: Partial<UserSettings>): Promise<void> 
 }
 
 /**
+ * Пошта, під якою востаннє успішно входили (для сторінки налаштувань, де немає вкладки Gmail).
+ * Локально на цьому комп’ютері (chrome.storage.local).
+ */
+export async function getLastEmail(): Promise<string | null> {
+  const { lastEmail } = await chrome.storage.local.get('lastEmail');
+  return typeof lastEmail === 'string' ? lastEmail : null;
+}
+
+export async function setLastEmail(email: string): Promise<void> {
+  await chrome.storage.local.set({ lastEmail: email.toLowerCase() });
+}
+
+/**
  * Витягує ID папки з посилання Google Диска або повертає сам ID.
  * Підтримує: https://drive.google.com/drive/folders/<ID>, …/drive/u/0/folders/<ID>,
  * …?id=<ID>, а також «голий» ID.

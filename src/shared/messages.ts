@@ -32,6 +32,29 @@ export interface AuthStatus {
   email: string;
 }
 
+/** Куди буде збережено документ (для показу в popup). */
+export interface SaveLocation {
+  /** «Вхідна документація / 2026-2027». */
+  path: string;
+  rootLink: string;
+  /** false — папку року буде створено під час першого збереження. */
+  yearExists: boolean;
+}
+
+/** Один пункт звіту «Перевірити доступ». */
+export interface AccessCheckItem {
+  label: string;
+  status: 'ok' | 'warn' | 'error';
+  detail: string;
+  link?: string;
+}
+
+export interface AccessReport {
+  items: AccessCheckItem[];
+  /** true — помилок немає (попередження допустимі). */
+  ok: boolean;
+}
+
 /** Запити до content script. */
 export type ContentRequest = { type: 'GET_OPENED_MESSAGE' };
 
@@ -42,7 +65,9 @@ export type BackgroundRequest =
   | { type: 'AUTH_STATUS'; email: string }
   | { type: 'SIGN_IN'; email: string }
   | { type: 'SIGN_OUT'; email: string }
-  | { type: 'GET_MESSAGE_PREVIEW'; email: string; messageId: string };
+  | { type: 'GET_MESSAGE_PREVIEW'; email: string; messageId: string }
+  | { type: 'GET_SAVE_LOCATION'; email: string }
+  | { type: 'CHECK_ACCESS'; email: string };
 
 /** Уніфікована відповідь service worker. */
 export type Result<T> =

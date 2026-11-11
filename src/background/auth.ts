@@ -8,6 +8,7 @@
 // redirect URI = https://<ID розширення>.chromiumapp.org/. Токени живуть ~1 год і
 // кешуються в chrome.storage.session (лише в пам’яті, не на диску). Оновлення —
 // тихим повторним входом (prompt=none), без участі користувача.
+import { setLastEmail } from '../shared/storage';
 
 export type AuthErrorCode = 'NEED_SIGN_IN' | 'WRONG_ACCOUNT' | 'CANCELLED' | 'FAILED';
 
@@ -51,6 +52,7 @@ async function readCache(email: string): Promise<CachedToken | null> {
 
 async function writeCache(email: string, value: CachedToken): Promise<void> {
   await chrome.storage.session.set({ [cacheKey(email)]: value });
+  await setLastEmail(email);
 }
 
 export async function clearCachedToken(email: string): Promise<void> {

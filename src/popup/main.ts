@@ -7,6 +7,7 @@ import {
   type ContentRequest,
   type MessagePreview,
   type OpenedMessageInfo,
+  type SaveLocation,
 } from '../shared/messages';
 import { getSettings } from '../shared/storage';
 
@@ -88,7 +89,27 @@ async function connect(email: string, messageId: string) {
     await callBackground<AuthStatus>({ type: 'SIGN_OUT', email });
     window.close();
   };
+  if (!(await showLocation(email))) return;
   await showPreview(email, messageId);
+}
+
+/** «Куди: Вхідна документація / 2026-2027». false — зберігати поки не можна. */
+async function showLocation(email: string): Promise<boolean> {
+  const { rootFolderId } = await getSettings();
+  if (!rootFolderId) {
+    pathEl.textContent = 'папку не налаштовано';
+    setStatus('Вкажіть папку «Вхідна документація» в налаштуваннях розширення.', 'error');
+    return false;
+  }
+  pathEl.textContent = 'визначаю…';
+  const res = await callBackground<SaveLocation>({ type: 'GET_SAVE_LOCATION', email });
+  if (!res.ok) {
+    pathEl.textContent = '—';
+    setStatus(res.error, 'error');
+    return false;
+  }
+  pathEl.textContent = res.data.path + (res.data.yearExists ? '' : ' (буде створено)');
+  return true;
 }
 
 async function init() {
@@ -98,8 +119,8 @@ async function init() {
   });
 
   const { rootFolderId } = await getSettings();
-  // Справжній шлях («Вхідна документація / 2026-2027») з’явиться після читання _config.json.
-  pathEl.textContent = rootFolderId ? 'Вхідна документація / …' : 'папку не налаштовано';
+  // Справжній шлях з’являється після входу (showLocation).
+  pathEl.textContent = rootFolderId ? '…' : 'папку не налаштовано';
 
   const result = await getOpenedMessage();
   if (result === 'no-script') {

@@ -1,5 +1,13 @@
 // Service worker розширення: авторизація Google і запити до API.
-import type { AuthStatus, BackgroundRequest, MessagePreview, Result } from '../shared/messages';
+import type {
+  AccessReport,
+  AuthStatus,
+  BackgroundRequest,
+  MessagePreview,
+  Result,
+  SaveLocation,
+} from '../shared/messages';
+import { checkAccess, getSaveLocation } from './workspace';
 import { getSettings } from '../shared/storage';
 import { getMessagePreview } from './api/gmail';
 import { AuthError, getToken, resolveAccount, signOut } from './auth';
@@ -45,6 +53,10 @@ async function handle(req: BackgroundRequest): Promise<unknown> {
       return { signedIn: false, email: req.email } satisfies AuthStatus;
     case 'GET_MESSAGE_PREVIEW':
       return (await getMessagePreview(req.email, req.messageId)) satisfies MessagePreview;
+    case 'GET_SAVE_LOCATION':
+      return (await getSaveLocation(req.email)) satisfies SaveLocation;
+    case 'CHECK_ACCESS':
+      return (await checkAccess(req.email)) satisfies AccessReport;
   }
 }
 
