@@ -55,9 +55,12 @@ const pad = (n: number) => String(n).padStart(2, '0');
 const dateTime = (d: Date) =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
-const quoteFormula = (s: string) => `"${s.replace(/"/g, '""')}"`;
-
-/** Рядок для values.append (valueInputOption=USER_ENTERED). */
+/**
+ * Рядок для values.append (valueInputOption=USER_ENTERED).
+ * «Папка» спершу — адреса папки (Таблиці показують її як посилання); потім клітинка
+ * замінюється на назву папки з вбудованим посиланням (setCellLink). Формулу
+ * =HYPERLINK не використовуємо: роздільник аргументів залежить від локалі таблиці.
+ */
 export function buildRow(e: RegistryEntry): (string | number)[] {
   const values: Record<(typeof COLUMNS)[number], string | number> = {
     // Номер рахує сама таблиця — коректно навіть при одночасному збереженні кількома людьми.
@@ -70,7 +73,7 @@ export function buildRow(e: RegistryEntry): (string | number)[] {
     'Короткий зміст': asText(e.summary),
     'Примітка': asText(e.note),
     'Додатків': e.attachmentCount,
-    'Папка': `=HYPERLINK(${quoteFormula(e.folderUrl)},${quoteFormula(e.folderName)})`,
+    'Папка': e.folderUrl,
     'Зберіг': asText(e.savedBy),
     'Коли збережено': dateTime(e.savedAt),
     'Message-ID': asText(e.messageId),
@@ -117,6 +120,12 @@ export function findDuplicate(values: string[][], messageId: string, md5: string
     if (i >= 0) return describe(rows[i], i, 'md5');
   }
   return null;
+}
+
+/** Номер рядка з діапазону відповіді append: «'Реєстр'!A5:N5» → 5. */
+export function rowFromRange(range: string): number | null {
+  const m = range.match(/![A-Z]+(\d+)/);
+  return m ? Number(m[1]) : null;
 }
 
 /** Літера колонки за індексом (0 → A). */

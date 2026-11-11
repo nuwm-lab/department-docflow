@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildRow, columnLetter, COLUMNS, findDuplicate, type RegistryEntry } from './registry';
+import { buildRow, columnLetter, COLUMNS, findDuplicate, rowFromRange, type RegistryEntry } from './registry';
 
 const entry: RegistryEntry = {
   receivedDate: '2026-11-11',
@@ -36,10 +36,9 @@ describe('buildRow', () => {
     expect(cell('Примітка')).toBe('');
   });
 
-  it('посилання на папку з екранованими лапками', () => {
-    expect(cell('Папка')).toBe(
-      '=HYPERLINK("https://drive.google.com/drive/folders/abc","2026-11-11_Наказ_№1-09-12_""Про""")',
-    );
+  it('папка — адреса без формул (формули залежать від локалі таблиці)', () => {
+    expect(cell('Папка')).toBe('https://drive.google.com/drive/folders/abc');
+    expect(row.filter((v) => typeof v === 'string' && v.startsWith('=') && v !== '=ROW()-1')).toEqual([]);
   });
 
   it('дата/час збереження, відсортовані MD5', () => {
@@ -85,6 +84,14 @@ describe('findDuplicate', () => {
   it('колонки шукаються за назвою (порядок може змінитися)', () => {
     const reordered = [['Message-ID', 'Зберіг'], ['<q@w>', 'хтось']];
     expect(findDuplicate(reordered, '<q@w>', [])?.savedBy).toBe('хтось');
+  });
+});
+
+describe('rowFromRange', () => {
+  it('номер рядка з відповіді append', () => {
+    expect(rowFromRange("'Реєстр'!A5:N5")).toBe(5);
+    expect(rowFromRange('Sheet1!A12:N12')).toBe(12);
+    expect(rowFromRange('')).toBeNull();
   });
 });
 

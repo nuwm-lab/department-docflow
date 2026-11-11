@@ -5,6 +5,7 @@ import {
   HIDDEN_COLUMNS,
   REGISTRY_SHEET_TITLE,
   columnLetter,
+  rowFromRange,
 } from '../../storage/registry';
 import { SPREADSHEET_MIME, type DriveFile } from './drive';
 import { googleFetch } from './http';
@@ -108,13 +109,76 @@ export async function readRegistry(email: string, spreadsheetId: string): Promis
   return ((await res.json()) as { values?: string[][] }).values ?? [];
 }
 
-/** Формула клітинки (для посилання на папку з =HYPERLINK). */
-export async function readCellFormula(email: string, spreadsheetId: string, a1: string): Promise<string> {
-  const res = await googleFetch(
-    email,
-    `${SHEETS}/${spreadsheetId}/values/${encodeURIComponent(a1)}?valueRenderOption=FORMULA`,
+interface CellData {
+  hyperlink?: string;
+  formattedValue?: string;
+  textFormatRuns?: { format?: { link?: { uri?: string } } }[];
+}
+
+/** Посилання з клітинки (вбудоване в текст або сама адреса). null — посилання немає. */
+export async function readCellLink(email: string, spreadsheetId: string, a1: string): Promise<string | null> {
+  const url = new URL(`${SHEETS}/${spreadsheetId}`);
+  url.searchParams.set('ranges', a1);
+  url.searchParams.set('fields', 'sheets.data.rowData.values(hyperlink,formattedValue,textFormatRuns.format.link.uri)');
+  const res = await googleFetch(email, url.href);
+  const data = (await res.json()) as { sheets?: { data?: { rowData?: { values?: CellData[] }[] }[] }[] };
+  const cell = data.sheets?.[0]?.data?.[0]?.rowData?.[0]?.values?.[0];
+  if (!cell) return null;
+  return (
+    cell.hyperlink ??
+    cell.textFormatRuns?.find((r) => r.format?.link?.uri)?.format?.link?.uri ??
+    (cell.formattedValue?.startsWith('https://') ? cell.formattedValue : null)
   );
-  return String(((await res.json()) as { values?: unknown[][] }).values?.[0]?.[0] ?? '');
+}
+
+async function firstSheetId(email: string, spreadsheetId: string): Promise<number> {
+  const res = await googleFetch(email, `${SHEETS}/${spreadsheetId}?fields=sheets.properties(sheetId)`);
+  return ((await res.json()) as { sheets: { properties: { sheetId: number } }[] }).sheets[0].properties.sheetId;
+}
+
+/**
+ * Записує в клітинку текст із вбудованим посиланням (без формул — не залежить від локалі).
+ * row — номер рядка в таблиці (з 1), column — індекс колонки (з 0).
+ */
+export async function setCellLink(
+  email: string,
+  spreadsheetId: string,
+  row: number,
+  column: number,
+  text: string,
+  uri: string,
+): Promise<void> {
+  const sheetId = await firstSheetId(email, spreadsheetId);
+  await googleFetch(email, `${SHEETS}/${spreadsheetId}:batchUpdate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      requests: [
+        {
+          updateCells: {
+            range: {
+              sheetId,
+              startRowIndex: row - 1,
+              endRowIndex: row,
+              startColumnIndex: column,
+              endColumnIndex: column + 1,
+            },
+            rows: [
+              {
+                values: [
+                  {
+                    userEnteredValue: { stringValue: text },
+                    textFormatRuns: [{ startIndex: 0, format: { link: { uri } } }],
+                  },
+                ],
+              },
+            ],
+            fields: 'userEnteredValue,textFormatRuns',
+          },
+        },
+      ],
+    }),
+  });
 }
 
 /**
@@ -122,8 +186,12 @@ export async function readCellFormula(email: string, spreadsheetId: string, a1: 
  * OVERWRITE пише в наступний порожній рядок; INSERT_ROWS вставляв би новий рядок,
  * який успадковує форматування рядка вище (жирний заголовок).
  */
-export async function appendRow(email: string, spreadsheetId: string, row: (string | number)[]): Promise<void> {
-  await googleFetch(
+export async function appendRow(
+  email: string,
+  spreadsheetId: string,
+  row: (string | number)[],
+): Promise<number | null> {
+  const res = await googleFetch(
     email,
     `${SHEETS}/${spreadsheetId}/values/${encodeURIComponent('A1')}:append?valueInputOption=USER_ENTERED&insertDataOption=OVERWRITE`,
     {
@@ -132,4 +200,6 @@ export async function appendRow(email: string, spreadsheetId: string, row: (stri
       body: JSON.stringify({ values: [row] }),
     },
   );
+  const range = ((await res.json()) as { updates?: { updatedRange?: string } }).updates?.updatedRange ?? '';
+  return rowFromRange(range);
 }

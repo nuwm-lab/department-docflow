@@ -10,7 +10,7 @@ import { base64UrlToBytes, parseGmailMessage } from '../sources/gmail/parse';
 import type { SourceAttachment, SourceDocument } from '../sources/types';
 import { previousAcademicYear } from '../storage/academicYear';
 import { uniqueName, localIsoDate } from '../storage/naming';
-import { buildRow, columnLetter, findDuplicate } from '../storage/registry';
+import { buildRow, columnLetter, COLUMNS, findDuplicate } from '../storage/registry';
 import {
   createFolder,
   findChildren,
@@ -22,7 +22,7 @@ import {
 } from './api/drive';
 import { getAttachmentData, getMessageFull, getRawMessage } from './api/gmail';
 import { ApiError } from './api/http';
-import { appendRow, createRegistry, readCellFormula, readRegistry } from './api/sheets';
+import { appendRow, createRegistry, readCellLink, readRegistry, setCellLink } from './api/sheets';
 import { uploadFile } from './api/upload';
 import { ensureYearFolder, loadWorkspace, registryName, WorkspaceError, type Workspace } from './workspace';
 
@@ -53,9 +53,6 @@ async function registriesToCheck(ws: Workspace): Promise<{ year: string; file: D
   return out;
 }
 
-/** URL з формули =HYPERLINK("url","назва"). */
-const urlFromFormula = (formula: string) => formula.match(/HYPERLINK\(\s*"([^"]+)"/i)?.[1] ?? null;
-
 export async function findDuplicateInRegistries(
   ws: Workspace,
   messageId: string,
@@ -67,9 +64,7 @@ export async function findDuplicateInRegistries(
     if (!match) continue;
     const folderCol = values[0].indexOf('Папка');
     const folderUrl =
-      folderCol >= 0
-        ? urlFromFormula(await readCellFormula(ws.email, file.id, `${columnLetter(folderCol)}${match.row}`))
-        : null;
+      folderCol >= 0 ? await readCellLink(ws.email, file.id, `${columnLetter(folderCol)}${match.row}`) : null;
     return {
       by: match.by,
       year,
@@ -257,7 +252,7 @@ export async function saveDocument(req: SaveRequest): Promise<SaveResult> {
   const registry =
     (await findRegistry(email, yearFolder.id, ws.yearName)) ??
     (await createRegistry(email, yearFolder.id, registryName(ws.yearName)));
-  await appendRow(
+  const row = await appendRow(
     email,
     registry.id,
     buildRow({
@@ -278,6 +273,13 @@ export async function saveDocument(req: SaveRequest): Promise<SaveResult> {
     }),
   );
   await clearPending(email, req.messageId);
+
+  // Назва папки з посиланням замість адреси. Не критично: якщо не вдасться, лишиться адреса-посилання.
+  if (row) {
+    await setCellLink(email, registry.id, row, COLUMNS.indexOf('Папка'), folder.name, folderLink(folder.id)).catch(
+      (err: unknown) => console.warn('[docflow] не вдалося оформити посилання на папку', err),
+    );
+  }
 
   return {
     status: 'saved',
