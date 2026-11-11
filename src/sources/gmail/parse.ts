@@ -100,13 +100,15 @@ export function parseGmailMessage(msg: GmailMessage): SourceDocument {
       !!part.filename || /^attachment/i.test(disposition) || (!!part.body?.attachmentId && !mime.startsWith('text/'));
 
     if (isAttachment) {
+      const attachmentId = part.body?.attachmentId;
       attachments.push({
-        id: part.body?.attachmentId ?? `part:${part.partId ?? attachments.length}`,
+        // partId стабільний між запитами, attachmentId — ні.
+        id: `part:${part.partId ?? attachments.length}`,
         filename: part.filename || `додаток-${attachments.length + 1}`,
         mimeType: mime || 'application/octet-stream',
         size: part.body?.size ?? 0,
         inline: !!contentId && !/^attachment/i.test(disposition),
-        ...(part.body?.attachmentId ? {} : { data: part.body?.data ?? '' }),
+        ...(attachmentId ? { downloadId: attachmentId } : { data: part.body?.data ?? '' }),
       });
       return;
     }

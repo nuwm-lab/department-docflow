@@ -5,8 +5,12 @@ import {
   callBackground,
   type AuthStatus,
   type ContentRequest,
+  type DuplicateInfo,
   type OpenedMessageInfo,
   type PreparedDocument,
+  type SaveProgress,
+  type SaveRequest,
+  type SaveResult,
 } from '../shared/messages';
 import { getSettings } from '../shared/storage';
 import { buildLetterMarkdown } from '../storage/markdown';
@@ -38,8 +42,30 @@ const f = {
   mdText: $<HTMLPreElement>('md-text'),
 };
 
-/** Поточний підготовлений документ. */
+const saveBtn = $<HTMLButtonElement>('save-btn');
+const dup = {
+  box: $<HTMLDivElement>('dup-box'),
+  text: $<HTMLParagraphElement>('dup-text'),
+  folder: $<HTMLAnchorElement>('dup-folder'),
+  registry: $<HTMLAnchorElement>('dup-registry'),
+  confirm: $<HTMLInputElement>('dup-confirm'),
+};
+const result = {
+  box: $<HTMLDivElement>('result'),
+  text: $<HTMLParagraphElement>('result-text'),
+  failed: $<HTMLUListElement>('result-failed'),
+  folder: $<HTMLAnchorElement>('result-folder'),
+  registry: $<HTMLAnchorElement>('result-registry'),
+  retry: $<HTMLButtonElement>('retry-btn'),
+};
+const progressBox = $<HTMLDivElement>('progress');
+const progressBar = $<HTMLProgressElement>('progress-bar');
+const progressText = $<HTMLParagraphElement>('progress-text');
+
+/** Поточний підготовлений документ і пошта, під якою працюємо. */
 let prepared: PreparedDocument | null = null;
+let currentEmail: string | null = null;
+let saving = false;
 
 function setStatus(text: string, kind: 'hint' | 'ok' | 'error' = 'hint') {
   statusEl.textContent = text;
@@ -132,9 +158,12 @@ async function connectByIndex(accountIndex: number, messageId: string) {
 async function loadDocument(email: string, messageId: string) {
   setStatus('Читаю лист…');
   form.hidden = true;
+  dup.box.hidden = true;
+  result.box.hidden = true;
   const res = await callBackground<PreparedDocument>({ type: 'PREPARE_DOCUMENT', email, messageId });
   if (!res.ok) return setStatus(res.error, 'error');
   prepared = res.data;
+  currentEmail = email;
   renderForm(email, res.data);
   setStatus('');
 }
@@ -183,8 +212,140 @@ function renderForm(email: string, p: PreparedDocument) {
 
   updateFolderName();
   if (f.mdPreview.open) updateMarkdownPreview();
+  if (p.duplicate) showDuplicate(p.duplicate);
   form.hidden = false;
+  updateSaveButton();
 }
+
+// ---------- Дублікати, збереження, результат ----------
+
+function showDuplicate(d: DuplicateInfo) {
+  const when = [d.savedAt, d.savedBy].filter(Boolean).join(', ');
+  const where = prepared && d.year !== prepared.location.path.split(' / ').pop() ? ` (реєстр ${d.year})` : '';
+  dup.text.textContent =
+    d.by === 'message-id'
+      ? `Вже збережено${when ? `: ${when}` : ''}${where}.`
+      : `Ці вкладення вже є в реєстрі — «${d.folderName}»${when ? `, ${when}` : ''}${where}. ` +
+        'Можливо, той самий документ прийшов іншим листом.';
+  dup.folder.hidden = !d.folderUrl;
+  if (d.folderUrl) dup.folder.href = d.folderUrl;
+  dup.registry.hidden = !d.registryUrl;
+  if (d.registryUrl) dup.registry.href = d.registryUrl;
+  dup.confirm.checked = false;
+  dup.box.hidden = false;
+  updateSaveButton();
+}
+
+function updateSaveButton() {
+  saveBtn.disabled = saving || (!dup.box.hidden && !dup.confirm.checked);
+  saveBtn.textContent = !dup.box.hidden ? 'Зберегти ще раз' : 'Зберегти';
+}
+
+function setLink(a: HTMLAnchorElement, url: string | null | undefined) {
+  a.hidden = !url;
+  if (url) a.href = url;
+}
+
+function showResult(kind: 'ok' | 'error', text: string) {
+  result.box.className = `box ${kind}-box`;
+  result.text.textContent = text;
+  result.failed.replaceChildren();
+  result.retry.hidden = true;
+  result.box.hidden = false;
+}
+
+function buildRequest(): SaveRequest | null {
+  if (!prepared || !currentEmail) return null;
+  const doc = prepared.doc;
+  const checked = Array.from(f.attList.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')).filter(
+    (cb) => cb.checked,
+  );
+  return {
+    email: currentEmail,
+    messageId: doc.sourceId,
+    fields: {
+      type: f.type.value,
+      number: f.number.value.trim(),
+      documentDate: f.date.value,
+      from: f.from.value.trim(),
+      summary: f.summary.value.trim(),
+      note: f.note.value.trim(),
+    },
+    folderName: f.folderName.textContent ?? '',
+    attachmentIds: checked.map((cb) => doc.attachments[Number(cb.dataset.index)].id),
+    letterMarkdown: buildLetterMarkdown(doc, selectedAttachmentNames(), f.note.value),
+    confirmDuplicate: !dup.box.hidden && dup.confirm.checked,
+  };
+}
+
+async function runSave(request: SaveRequest) {
+  saving = true;
+  form.inert = true;
+  result.box.hidden = true;
+  progressBox.hidden = false;
+  progressBar.removeAttribute('value');
+  progressText.textContent = 'Починаю…';
+  setStatus('');
+  updateSaveButton();
+
+  const res = await callBackground<SaveResult>({ type: 'SAVE_DOCUMENT', request });
+
+  saving = false;
+  form.inert = false;
+  progressBox.hidden = true;
+  updateSaveButton();
+
+  if (!res.ok) {
+    showResult('error', res.error);
+    return;
+  }
+  const r = res.data;
+  switch (r.status) {
+    case 'saved':
+      form.hidden = true;
+      dup.box.hidden = true;
+      showResult('ok', `✓ Збережено: «${r.folderName}»`);
+      setLink(result.folder, r.folderUrl);
+      setLink(result.registry, r.registryUrl);
+      break;
+    case 'duplicate':
+      showDuplicate(r.duplicate);
+      dup.box.scrollIntoView({ behavior: 'smooth' });
+      break;
+    case 'partial':
+      showResult(
+        'error',
+        'Не всі файли вдалося завантажити, тому запис у реєстр не додано. ' +
+          'Натисніть «Повторити» — папку буде використано ту саму, завантажаться лише відсутні файли.',
+      );
+      result.failed.replaceChildren(
+        ...r.failed.map((x) => Object.assign(document.createElement('li'), { textContent: `${x.name}: ${x.error}` })),
+      );
+      setLink(result.folder, r.folderUrl);
+      setLink(result.registry, null);
+      result.retry.hidden = false;
+      result.retry.onclick = () => runSave(request);
+      break;
+  }
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const request = buildRequest();
+  if (request && !saving) await runSave(request);
+});
+dup.confirm.addEventListener('change', updateSaveButton);
+
+chrome.runtime.onMessage.addListener((msg: SaveProgress) => {
+  if (msg?.type !== 'SAVE_PROGRESS' || !saving || msg.messageId !== prepared?.doc.sourceId) return;
+  progressText.textContent = msg.total ? `${msg.text} ${msg.done} з ${msg.total}` : msg.text;
+  if (msg.total) {
+    progressBar.max = msg.total;
+    progressBar.value = msg.done;
+  } else {
+    progressBar.removeAttribute('value');
+  }
+});
 
 function selectedAttachmentNames(): string[] {
   if (!prepared) return [];
@@ -219,7 +380,6 @@ form.addEventListener('input', () => {
 f.mdPreview.addEventListener('toggle', () => {
   if (f.mdPreview.open) updateMarkdownPreview();
 });
-form.addEventListener('submit', (e) => e.preventDefault());
 
 // ---------- Старт ----------
 

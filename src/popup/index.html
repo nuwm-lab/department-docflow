@@ -25,6 +25,28 @@
 
       <button id="sign-in-btn" type="button" hidden>Увійти в Google</button>
 
+      <div id="dup-box" class="box warn-box" hidden>
+        <p id="dup-text"></p>
+        <p class="links">
+          <a id="dup-folder" target="_blank" hidden>Відкрити папку</a>
+          <a id="dup-registry" target="_blank" hidden>Відкрити реєстр</a>
+        </p>
+        <label class="confirm">
+          <input id="dup-confirm" type="checkbox" />
+          Так, зберегти ще раз
+        </label>
+      </div>
+
+      <div id="result" class="box" hidden>
+        <p id="result-text"></p>
+        <ul id="result-failed"></ul>
+        <p class="links">
+          <a id="result-folder" target="_blank" hidden>Відкрити папку</a>
+          <a id="result-registry" target="_blank" hidden>Відкрити реєстр</a>
+        </p>
+        <button id="retry-btn" type="button" hidden>Повторити</button>
+      </div>
+
       <form id="form" hidden>
         <label class="field" id="thread-row" hidden>
           <span>Лист у ланцюжку</span>
@@ -75,8 +97,12 @@
           <pre id="md-text"></pre>
         </details>
 
-        <button id="save-btn" type="submit" disabled>Зберегти</button>
-        <p class="muted small">Збереження на Диск з’явиться на наступному кроці.</p>
+        <div id="progress" hidden>
+          <progress id="progress-bar"></progress>
+          <p id="progress-text" class="muted small"></p>
+        </div>
+
+        <button id="save-btn" type="submit">Зберегти</button>
       </form>
 
       <p class="footer">

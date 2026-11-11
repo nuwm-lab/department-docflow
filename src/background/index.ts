@@ -6,7 +6,11 @@ import type {
   PreparedDocument,
   Result,
   SaveLocation,
+  SaveRequest,
+  SaveResult,
 } from '../shared/messages';
+import { addLog } from '../shared/log';
+import { saveDocument } from './save';
 import { checkAccess, getSaveLocation } from './workspace';
 import { getSettings } from '../shared/storage';
 import { prepareDocument } from './prepare';
@@ -19,6 +23,21 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     if (!rootFolderId) chrome.runtime.openOptionsPage();
   }
 });
+
+/** Збереження із записом у локальний журнал операцій. */
+async function saveWithLog(request: SaveRequest): Promise<SaveResult> {
+  const base = { email: request.email, action: 'save' as const, subject: request.folderName };
+  try {
+    const res = await saveDocument(request);
+    if (res.status === 'saved') await addLog({ ...base, status: 'saved', subject: res.folderName, link: res.folderUrl });
+    else if (res.status === 'duplicate') await addLog({ ...base, status: 'duplicate', detail: res.duplicate.folderName });
+    else await addLog({ ...base, status: 'partial', detail: res.failed.map((f) => `${f.name}: ${f.error}`).join('; '), link: res.folderUrl });
+    return res;
+  } catch (err) {
+    await addLog({ ...base, status: 'error', detail: err instanceof Error ? err.message : String(err) });
+    throw err;
+  }
+}
 
 async function handle(req: BackgroundRequest): Promise<unknown> {
   switch (req.type) {
@@ -53,6 +72,8 @@ async function handle(req: BackgroundRequest): Promise<unknown> {
       return { signedIn: false, email: req.email } satisfies AuthStatus;
     case 'PREPARE_DOCUMENT':
       return (await prepareDocument(req.email, req.messageId)) satisfies PreparedDocument;
+    case 'SAVE_DOCUMENT':
+      return saveWithLog(req.request);
     case 'GET_SAVE_LOCATION':
       return (await getSaveLocation(req.email)) satisfies SaveLocation;
     case 'CHECK_ACCESS':

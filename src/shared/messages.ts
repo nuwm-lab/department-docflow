@@ -28,6 +28,59 @@ export interface PreparedDocument {
   thread: ThreadMessage[];
   config: DocflowConfig;
   location: SaveLocation;
+  /** Лист уже є в реєстрі (за Message-ID). */
+  duplicate: DuplicateInfo | null;
+}
+
+/** Документ уже збережено раніше. */
+export interface DuplicateInfo {
+  by: 'message-id' | 'md5';
+  /** Навчальний рік реєстру, де знайдено запис. */
+  year: string;
+  savedAt: string;
+  savedBy: string;
+  folderName: string;
+  folderUrl: string | null;
+  registryUrl: string | null;
+}
+
+/** Реквізити з форми popup. */
+export interface SaveFields {
+  type: string;
+  number: string;
+  documentDate: string;
+  from: string;
+  summary: string;
+  note: string;
+}
+
+export interface SaveRequest {
+  email: string;
+  /** ID листа в Gmail. */
+  messageId: string;
+  fields: SaveFields;
+  /** Назва папки з форми (унікальність перевіряє service worker). */
+  folderName: string;
+  /** ID вкладень, які треба зберегти. */
+  attachmentIds: string[];
+  /** Лист.md (будується в popup — там є DOM для Turndown). */
+  letterMarkdown: string;
+  /** Користувач підтвердив повторне збереження дубліката. */
+  confirmDuplicate: boolean;
+}
+
+export type SaveResult =
+  | { status: 'saved'; folderUrl: string; folderName: string; registryUrl: string }
+  | { status: 'duplicate'; duplicate: DuplicateInfo }
+  | { status: 'partial'; failed: { name: string; error: string }[]; folderUrl: string; folderName: string };
+
+/** Повідомлення service worker → popup про хід збереження. */
+export interface SaveProgress {
+  type: 'SAVE_PROGRESS';
+  messageId: string;
+  text: string;
+  done: number;
+  total: number;
 }
 
 export interface AuthStatus {
@@ -69,6 +122,7 @@ export type BackgroundRequest =
   | { type: 'SIGN_IN'; email: string }
   | { type: 'SIGN_OUT'; email: string }
   | { type: 'PREPARE_DOCUMENT'; email: string; messageId: string }
+  | { type: 'SAVE_DOCUMENT'; request: SaveRequest }
   | { type: 'GET_SAVE_LOCATION'; email: string }
   | { type: 'CHECK_ACCESS'; email: string };
 

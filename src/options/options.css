@@ -29,6 +29,10 @@ code { font-size: 12px; }
 .report a { color: var(--accent); margin-left: 6px; }
 .report .summary { display: block; font-weight: 600; }
 
+#log li { grid-template-columns: 22px 130px 1fr; font-size: 13px; }
+#log-clear { margin-top: 10px; }
+button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--border); }
+
 @media (max-width: 520px) {
   .report li { grid-template-columns: 22px 1fr; }
   .report .detail { grid-column: 2; }

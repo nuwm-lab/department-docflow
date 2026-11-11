@@ -9,8 +9,13 @@ export interface Address {
 }
 
 export interface SourceAttachment {
-  /** Ідентифікатор для завантаження з джерела (у Gmail — attachmentId). */
+  /**
+   * Стабільний ідентифікатор вкладення в межах листа (у Gmail — partId).
+   * Не attachmentId: Gmail генерує його заново при кожному запиті листа.
+   */
   id: string;
+  /** Ідентифікатор для завантаження вмісту (у Gmail — attachmentId; дійсний лише для цього запиту). */
+  downloadId?: string;
   filename: string;
   mimeType: string;
   /** Розмір у байтах (як повідомляє джерело). */

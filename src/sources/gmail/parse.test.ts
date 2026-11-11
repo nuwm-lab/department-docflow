@@ -74,9 +74,15 @@ describe('parseGmailMessage', () => {
 
   it('вкладення; вбудоване зображення позначене inline', () => {
     expect(doc.attachments).toEqual([
-      { id: 'ATT1', filename: 'Наказ_123-к.pdf', mimeType: 'application/pdf', size: 20480, inline: false },
-      { id: 'ATT2', filename: 'logo.png', mimeType: 'image/png', size: 1024, inline: true },
+      { id: 'part:2', downloadId: 'ATT1', filename: 'Наказ_123-к.pdf', mimeType: 'application/pdf', size: 20480, inline: false },
+      { id: 'part:3', downloadId: 'ATT2', filename: 'logo.png', mimeType: 'image/png', size: 1024, inline: true },
     ]);
+  });
+
+  it('ID вкладень стабільні, хоча Gmail щоразу видає новий attachmentId', () => {
+    const again = structuredClone(message);
+    again.payload!.parts![1].body!.attachmentId = 'ATT1-NEW';
+    expect(parseGmailMessage(again).attachments.map((a) => a.id)).toEqual(doc.attachments.map((a) => a.id));
   });
 });
 

@@ -1,5 +1,6 @@
 // Сторінка налаштувань: коренева папка «Вхідна документація» і «Перевірити доступ».
 import { callBackground, type AccessReport, type AuthStatus } from '../shared/messages';
+import { clearLog, readLog, type LogEntry } from '../shared/log';
 import { getLastEmail, getSettings, parseFolderId, saveSettings } from '../shared/storage';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -90,7 +91,50 @@ async function runCheck() {
   }
 }
 
+const LOG_LABELS: Record<LogEntry['status'], { icon: string; kind: 'ok' | 'warn' | 'error'; text: string }> = {
+  saved: { icon: ICONS.ok, kind: 'ok', text: 'Збережено' },
+  duplicate: { icon: ICONS.warn, kind: 'warn', text: 'Дублікат' },
+  partial: { icon: ICONS.error, kind: 'error', text: 'Частково' },
+  error: { icon: ICONS.error, kind: 'error', text: 'Помилка' },
+};
+
+async function renderLog() {
+  const log = await readLog();
+  const list = $<HTMLUListElement>('log');
+  list.replaceChildren(
+    ...log.map((e) => {
+      const l = LOG_LABELS[e.status];
+      const li = Object.assign(document.createElement('li'), { className: l.kind });
+      const when = new Date(e.at).toLocaleString('uk-UA', {
+        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+      });
+      const detail = Object.assign(document.createElement('span'), {
+        className: 'detail',
+        textContent: [e.subject, e.detail, e.email].filter(Boolean).join(' — '),
+      });
+      if (e.link) {
+        detail.append(Object.assign(document.createElement('a'), { href: e.link, target: '_blank', textContent: 'папка' }));
+      }
+      li.append(
+        Object.assign(document.createElement('span'), { className: 'icon', textContent: l.icon }),
+        Object.assign(document.createElement('span'), { className: 'label', textContent: `${when} · ${l.text}` }),
+        detail,
+      );
+      return li;
+    }),
+  );
+  list.hidden = log.length === 0;
+  $<HTMLParagraphElement>('log-empty').hidden = log.length > 0;
+  $<HTMLButtonElement>('log-clear').hidden = log.length === 0;
+}
+
 async function init() {
+  await renderLog();
+  $<HTMLButtonElement>('log-clear').addEventListener('click', async () => {
+    await clearLog();
+    await renderLog();
+  });
+
   const { rootFolderId } = await getSettings();
   hasFolder = !!rootFolderId;
   if (rootFolderId) input.value = `https://drive.google.com/drive/folders/${rootFolderId}`;
@@ -118,6 +162,7 @@ async function init() {
 
   // Увійшли через popup, поки ця сторінка відкрита — оновлюємо акаунт без перезавантаження.
   chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.operationLog) void renderLog();
     if (area !== 'local' || !changes.lastEmail) return;
     email = (changes.lastEmail.newValue as string | undefined) ?? null;
     accountEl.textContent = email ?? 'ще не входили';
