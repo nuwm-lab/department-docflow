@@ -33,6 +33,7 @@ const f = {
   number: $<HTMLInputElement>('f-number'),
   date: $<HTMLInputElement>('f-date'),
   from: $<HTMLInputElement>('f-from'),
+  fromHint: $<HTMLParagraphElement>('from-hint'),
   summary: $<HTMLTextAreaElement>('f-summary'),
   note: $<HTMLInputElement>('f-note'),
   folderName: $<HTMLElement>('folder-name'),
@@ -188,6 +189,10 @@ function renderForm(email: string, p: PreparedDocument) {
   f.number.value = draft.number;
   f.date.value = draft.documentDate;
   f.from.value = draft.from;
+  f.fromHint.hidden = !draft.forwardedBy;
+  f.fromHint.textContent = draft.forwardedBy
+    ? `Відправника взято з пересланого листа. Переслано з: ${draft.forwardedBy}`
+    : '';
   f.summary.value = draft.summary;
   f.note.value = draft.note;
 

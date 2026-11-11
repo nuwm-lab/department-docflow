@@ -7,6 +7,7 @@
 .field { display: block; margin: 0 0 10px; font-weight: 400; }
 .field > span { display: block; margin-bottom: 3px; font-size: 12px; color: var(--muted); }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.hint-line { margin: -4px 0 10px; font-size: 12px; overflow-wrap: anywhere; }
 
 select,
 textarea,

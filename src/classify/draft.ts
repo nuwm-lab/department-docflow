@@ -3,7 +3,9 @@
 import type { SourceDocument } from '../sources/types';
 import type { DocflowConfig } from '../storage/config';
 import { classify } from './classify';
+import { formatAddress } from '../sources/gmail/parse';
 import { buildSummary, cleanSubject, findDocumentDate, findNumber } from './extract';
+import { findForwardedSender } from './forwarded';
 
 export interface DocumentDraft {
   type: string;
@@ -11,8 +13,10 @@ export interface DocumentDraft {
   number: string;
   /** Дата документа, РРРР-ММ-ДД (порожньо, якщо не знайдено). */
   documentDate: string;
-  /** Від кого: ім’я відправника або адреса. */
+  /** Від кого: ім’я відправника або адреса (для пересланого листа — справжній відправник). */
   from: string;
+  /** Хто переслав лист («Ім’я <адреса>»), якщо відправника взято з блоку пересилання. */
+  forwardedBy: string | null;
   summary: string;
   note: string;
 }
@@ -43,13 +47,19 @@ export function makeDraft(doc: SourceDocument, config: DocflowConfig): DocumentD
   const filenames = doc.attachments.filter((a) => !a.inline).map((a) => a.filename);
   const bodyHead = body.slice(0, BODY_SCAN_LIMIT);
 
-  const type = classify({ subject, body, fromEmail: doc.from.email }, config.rules, config.documentTypes);
+  // Пересланий лист: відправник документа — у блоці пересилання, а не в заголовку From.
+  const forwarded = findForwardedSender(body, doc.subject);
+  const sender = forwarded ?? doc.from;
+  const fromEmail = sender.email || doc.from.email;
+
+  const type = classify({ subject, body, fromEmail }, config.rules, config.documentTypes);
 
   return {
     type,
     number: findNumber([subject, ...filenames, bodyHead]) ?? '',
     documentDate: findDocumentDate(subject, [...filenames, bodyHead]) ?? '',
-    from: doc.from.name || doc.from.email,
+    from: sender.name || sender.email,
+    forwardedBy: forwarded ? formatAddress(doc.from) : null,
     summary: buildSummary(doc.subject, type),
     note: '',
   };
