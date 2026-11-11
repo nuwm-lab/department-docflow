@@ -15,7 +15,24 @@
         <span id="save-path">…</span>
       </p>
 
+      <p class="account" id="account" hidden>
+        <span class="muted">Акаунт:</span>
+        <span id="account-email"></span>
+        <a href="#" id="sign-out" hidden>Вийти</a>
+      </p>
+
       <p id="status" class="hint">Перевіряю відкриту вкладку…</p>
+
+      <button id="sign-in-btn" type="button" hidden>Увійти в Google</button>
+
+      <dl id="preview" class="preview" hidden>
+        <dt>Тема</dt>
+        <dd id="pv-subject"></dd>
+        <dt>Від кого</dt>
+        <dd id="pv-from"></dd>
+        <dt>Дата</dt>
+        <dd id="pv-date"></dd>
+      </dl>
 
       <button id="save-btn" type="button" disabled>Зберегти</button>
 

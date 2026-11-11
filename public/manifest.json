@@ -30,7 +30,7 @@
     "https://sheets.googleapis.com/*"
   ],
   "oauth2": {
-    "client_id": "REPLACE_WITH_CLIENT_ID.apps.googleusercontent.com",
+    "client_id": "104287052473-t05vonpmb160u2qmontfpcj5u7iublen.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/gmail.readonly",
       "https://www.googleapis.com/auth/drive",
