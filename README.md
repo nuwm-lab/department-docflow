@@ -4,6 +4,7 @@
 
 - Технічне завдання: [docs/TZ.md](docs/TZ.md)
 - Налаштування доступу до Google: [docs/oauth-setup.md](docs/oauth-setup.md)
+- Запуск на кафедрі (Спільний диск, права, встановлення): [docs/rollout.md](docs/rollout.md)
 - Приклад спільних налаштувань: [docs/_config.example.json](docs/_config.example.json)
 
 **Стан:** етап 1 (MVP) за ТЗ реалізовано. Правила класифікації та витягування номера й дати з етапу 2 також уже працюють.
