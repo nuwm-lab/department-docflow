@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Іконка «Вхідна документація кафедри»: документ, що надходить у лоток вхідних. -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="#1A5FB4"/>
+  <!-- Документ -->
+  <path d="M38 18h36l18 18v52H38z" fill="#FFFFFF"/>
+  <path d="M74 18v18h18z" fill="#C6DAF5"/>
+  <rect x="47" y="46" width="36" height="6" rx="3" fill="#1A5FB4" opacity="0.35"/>
+  <rect x="47" y="58" width="36" height="6" rx="3" fill="#1A5FB4" opacity="0.35"/>
+  <rect x="47" y="70" width="24" height="6" rx="3" fill="#1A5FB4" opacity="0.35"/>
+  <!-- Лоток вхідних -->
+  <path d="M22 78h24l6 12h24l6-12h24v24a10 10 0 0 1-10 10H32a10 10 0 0 1-10-10z" fill="#FFC83D"/>
+</svg>
