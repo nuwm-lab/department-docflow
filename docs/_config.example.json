@@ -1,0 +1,13 @@
+{
+  "currentYearFolder": "2026-2027",
+  "documentTypes": ["Наказ", "Розпорядження", "Вхідний лист", "Службова записка", "Протокол", "Інше"],
+  "rules": [
+    { "type": "Наказ", "subjectContains": ["наказ"] },
+    { "type": "Розпорядження", "subjectContains": ["розпорядження"] },
+    { "type": "Вхідний лист", "fromDomains": ["mon.gov.ua"] }
+  ],
+  "folderNameTemplate": "{date}_{type}_№{number}_{summary}",
+  "bodyFormat": "markdown",
+  "alsoSavePdf": false,
+  "checkPreviousYear": true
+}

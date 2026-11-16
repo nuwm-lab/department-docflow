@@ -1,0 +1,67 @@
+/* Спільні стилі сторінок розширення. */
+:root {
+  --bg: #ffffff;
+  --fg: #1f1f1f;
+  --muted: #5f6368;
+  --border: #dadce0;
+  --accent: #1a73e8;
+  --accent-fg: #ffffff;
+  --warn-bg: #fef7e0;
+  --ok: #188038;
+  --error: #c5221f;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #202124;
+    --fg: #e8eaed;
+    --muted: #9aa0a6;
+    --border: #3c4043;
+    --accent: #8ab4f8;
+    --accent-fg: #202124;
+    --warn-bg: #3a3320;
+    --ok: #81c995;
+    --error: #f28b82;
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.45 system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+h1 { font-size: 16px; margin: 0 0 12px; }
+.muted { color: var(--muted); }
+.hint { background: var(--warn-bg); padding: 8px 10px; border-radius: 6px; }
+.ok { color: var(--ok); }
+.error { color: var(--error); }
+
+label { display: block; margin-bottom: 4px; font-weight: 500; }
+
+input[type="text"] {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+button {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+button:disabled { opacity: 0.45; cursor: default; }

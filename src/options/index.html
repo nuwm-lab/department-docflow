@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <title>Налаштування — Вхідна документація кафедри</title>
+    <link rel="icon" href="/icons/icon-32.png" />
+    <link rel="stylesheet" href="../shared/ui.css" />
+    <link rel="stylesheet" href="./options.css" />
+  </head>
+  <body>
+    <main class="options">
+      <h1>Налаштування «Вхідна документація кафедри»</h1>
+
+      <section>
+        <label for="root-folder">Спільна папка «Вхідна документація» на Google Диску</label>
+        <input
+          id="root-folder"
+          type="text"
+          placeholder="https://drive.google.com/drive/folders/…"
+          autocomplete="off"
+        />
+        <p class="muted small">
+          Вставте посилання на папку кафедри. Налаштування збережеться у вашому профілі Chrome
+          і перенесеться на інші комп’ютери. Папку навчального року, типи документів і правила
+          задає адміністратор у файлі <code>_config.json</code> у цій папці.
+        </p>
+        <div class="row">
+          <button id="save-btn" type="button">Зберегти</button>
+          <span id="status" role="status"></span>
+        </div>
+      </section>
+
+      <section>
+        <h2>Перевірка доступу</h2>
+        <p class="small">
+          <span class="muted">Акаунт:</span>
+          <span id="account">—</span>
+        </p>
+        <p id="account-hint" class="hint small" hidden>
+          Спершу відкрийте будь-який лист у Gmail, натисніть на іконку розширення і увійдіть у Google.
+        </p>
+        <div class="row">
+          <button id="check-btn" type="button" disabled>Перевірити доступ</button>
+          <button id="sign-in-btn" type="button" hidden>Увійти в Google</button>
+        </div>
+        <ul id="report" class="report" hidden></ul>
+      </section>
+
+      <section>
+        <h2>Журнал операцій</h2>
+        <p class="muted small">Останні 50 збережень на цьому комп’ютері — для діагностики.</p>
+        <ul id="log" class="report"></ul>
+        <p id="log-empty" class="muted small">Поки порожньо.</p>
+        <button id="log-clear" type="button" class="secondary" hidden>Очистити журнал</button>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <title>Вхідна документація кафедри</title>
+    <link rel="icon" href="/icons/icon-32.png" />
+    <link rel="stylesheet" href="../shared/ui.css" />
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <h1>Вхідна документація кафедри</h1>
+
+      <p class="path">
+        <span class="muted">Куди:</span>
+        <span id="save-path">…</span>
+      </p>
+
+      <p class="account" id="account" hidden>
+        <span class="muted">Акаунт:</span>
+        <span id="account-email"></span>
+        <a href="#" id="sign-out" hidden>Вийти</a>
+      </p>
+
+      <p id="status" class="hint">Перевіряю відкриту вкладку…</p>
+
+      <button id="sign-in-btn" type="button" hidden>Увійти в Google</button>
+
+      <div id="dup-box" class="box warn-box" hidden>
+        <p id="dup-text"></p>
+        <p class="links">
+          <a id="dup-folder" target="_blank" hidden>Відкрити папку</a>
+          <a id="dup-registry" target="_blank" hidden>Відкрити реєстр</a>
+        </p>
+        <label class="confirm">
+          <input id="dup-confirm" type="checkbox" />
+          Так, зберегти ще раз
+        </label>
+      </div>
+
+      <div id="result" class="box" hidden>
+        <p id="result-text"></p>
+        <ul id="result-failed"></ul>
+        <p class="links">
+          <a id="result-folder" target="_blank" hidden>Відкрити папку</a>
+          <a id="result-registry" target="_blank" hidden>Відкрити реєстр</a>
+        </p>
+        <button id="retry-btn" type="button" hidden>Повторити</button>
+      </div>
+
+      <form id="form" hidden>
+        <label class="field" id="thread-row" hidden>
+          <span>Лист у ланцюжку</span>
+          <select id="f-thread"></select>
+        </label>
+
+        <div class="grid">
+          <label class="field">
+            <span>Тип документа</span>
+            <select id="f-type"></select>
+          </label>
+          <label class="field">
+            <span>№ документа</span>
+            <input id="f-number" type="text" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>Дата документа</span>
+            <input id="f-date" type="date" />
+          </label>
+          <label class="field">
+            <span>Від кого</span>
+            <input id="f-from" type="text" autocomplete="off" />
+          </label>
+        </div>
+        <p id="from-hint" class="muted hint-line" hidden></p>
+
+        <label class="field">
+          <span>Короткий зміст</span>
+          <textarea id="f-summary" rows="2"></textarea>
+        </label>
+        <label class="field">
+          <span>Примітка</span>
+          <input id="f-note" type="text" autocomplete="off" />
+        </label>
+
+        <div class="folder">
+          <span class="muted">Назва папки</span>
+          <code id="folder-name"></code>
+        </div>
+
+        <fieldset class="attachments">
+          <legend>Додатки</legend>
+          <ul id="att-list"></ul>
+          <p id="att-empty" class="muted" hidden>Вкладень немає</p>
+        </fieldset>
+
+        <details id="md-preview">
+          <summary>Лист.md — попередній перегляд</summary>
+          <pre id="md-text"></pre>
+        </details>
+
+        <div id="progress" hidden>
+          <progress id="progress-bar"></progress>
+          <p id="progress-text" class="muted small"></p>
+        </div>
+
+        <button id="save-btn" type="submit">Зберегти</button>
+      </form>
+
+      <p class="footer">
+        <a href="#" id="open-options">Налаштування</a>
+      </p>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

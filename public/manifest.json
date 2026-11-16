@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Вхідна документація кафедри",
+  "short_name": "Docflow",
+  "version": "0.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw9mQ0y32/Ma9zxsLsomO86e2fNNMqTmccIz136b8dg96G2DcE3P/zss5bP48Y65HuZX3YfjtpTjRGpICoiRy0FqqBl6k35Tq2zYR34Ru3WIwCyO1PhAVZZU0PiFZQLbbM82ybYC6v6V6Hs2ePX4eM3ReKm9hVBAb6TwPR3VB/nmh5Pa3LC0gVryvQ718DvQW1wAw+CjjzJVCajXfvWqD6PrxjgLOPiYKPU8ghsCPcdzY9Rvhzl7YGN9uIl7W9GdXOAad1+JPCEru7Zen3xbt670VzCVbtUIe8t0burEaEweeg4Mz0HRTRj/v1BwsjHcTyRUkGtiefxRgGg6w/oCXLQIDAQAB",
+  "description": "Зберігає вхідні документи з Gmail у спільну папку кафедри на Google Диску та веде реєстр без дублікатів.",
+  "minimum_chrome_version": "120",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Вхідна документація кафедри",
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png"
+    }
+  },
+  "options_page": "options/index.html",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["identity", "storage"],
+  "host_permissions": [
+    "https://mail.google.com/*",
+    "https://www.googleapis.com/*",
+    "https://gmail.googleapis.com/*",
+    "https://sheets.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "104287052473-t05vonpmb160u2qmontfpcj5u7iublen.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/drive",
+      "https://www.googleapis.com/auth/spreadsheets"
+    ]
+  }
+}

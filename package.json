@@ -1,0 +1,26 @@
+{
+  "name": "department-docflow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Розширення Chrome «Вхідна документація кафедри»: зберігає вхідні документи з Gmail на Google Диск і веде реєстр без дублікатів.",
+  "type": "module",
+  "scripts": {
+    "build": "vite build && vite build --config vite.content.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "icons": "node scripts/build-icons.mjs"
+  },
+  "dependencies": {
+    "spark-md5": "^3.0.2",
+    "turndown": "^7.2.5"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/chrome": "^0.3.7",
+    "@types/spark-md5": "^3.0.5",
+    "@types/turndown": "^5.0.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}
